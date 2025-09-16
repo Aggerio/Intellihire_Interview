@@ -18,7 +18,29 @@ body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  font-family: "Consolas", "Andale Mono", monospace;
-  font-size: 0.9rem;
-  background-color: var(--color-base);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+    Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  font-size: 14px;
+  background-color: #f8fafc; /* slate-50 */
+  color: #0f172a; /* slate-900 */
+}
+
+/* Utility tokens for the new UI */
+:root {
+  --brand: #5b21b6; /* violet-800 */
+  --brand-600: #7c3aed; /* violet-600 */
+  --brand-500: #8b5cf6; /* violet-500 */
+  --surface: #ffffff;
+  --muted: #64748b; /* slate-500 */
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(2, 6, 23, 0.04);
+}
+
+.header-gradient {
+  background: linear-gradient(90deg, var(--brand-600), var(--brand-500));
 }

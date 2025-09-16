@@ -1,66 +1,71 @@
 import { useState } from "react";
-import { CloudLightning, CloudOff, MessageSquare } from "react-feather";
-import Button from "./Button";
+import { Mic, RotateCcw, Volume2 } from "react-feather";
 
 function SessionStopped({ startSession }) {
   const [isActivating, setIsActivating] = useState(false);
 
-  function handleStartSession() {
+  async function handleStartSession() {
     if (isActivating) return;
-
     setIsActivating(true);
-    startSession();
+    try {
+      await startSession();
+    } finally {
+      setIsActivating(false);
+    }
   }
 
   return (
-    <div className="flex items-center justify-center w-full h-full">
-      <Button
-        onClick={handleStartSession}
-        className={isActivating ? "bg-gray-600" : "bg-red-600"}
-        icon={<CloudLightning height={16} />}
-      >
-        {isActivating ? "starting session..." : "start session"}
-      </Button>
+    <div className="flex flex-col items-center justify-center w-full h-full gap-3">
+      <div className={`relative h-16 w-16 rounded-full flex items-center justify-center text-white shadow-lg cursor-pointer bg-gradient-to-br from-violet-600 to-violet-500 ${isActivating ? "opacity-70" : "hover:brightness-110"}`} onClick={handleStartSession}>
+        <Mic size={24} />
+      </div>
+      <div className="text-xs text-slate-500">Click the microphone to start your response</div>
     </div>
   );
 }
 
-function SessionActive({ stopSession, sendTextMessage }) {
-  const [message, setMessage] = useState("");
+function SessionActive({ sendTextMessage, sendClientEvent }) {
+  const [isRequesting, setIsRequesting] = useState(false);
 
-  function handleSendClientEvent() {
-    sendTextMessage(message);
-    setMessage("");
+  async function handleMicClick() {
+    if (isRequesting) return;
+    setIsRequesting(true);
+    try {
+      // Nudge the model to continue/respond if needed
+      sendClientEvent({ type: "response.create" });
+    } finally {
+      setIsRequesting(false);
+    }
   }
 
   return (
-    <div className="flex items-center justify-center w-full h-full gap-4">
-      <input
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && message.trim()) {
-            handleSendClientEvent();
-          }
-        }}
-        type="text"
-        placeholder="send a text message..."
-        className="border border-gray-200 rounded-full p-4 flex-1"
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-      />
-      <Button
-        onClick={() => {
-          if (message.trim()) {
-            handleSendClientEvent();
-          }
-        }}
-        icon={<MessageSquare height={16} />}
-        className="bg-blue-400"
-      >
-        send text
-      </Button>
-      <Button onClick={stopSession} icon={<CloudOff height={16} />}>
-        disconnect
-      </Button>
+    <div className="flex flex-col items-center justify-center w-full h-full gap-4">
+      <div className="flex items-center justify-center gap-6">
+        <button
+          className="h-12 w-12 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center shadow"
+          onClick={() => sendTextMessage("Could you please repeat the question?")}
+          title="Replay prompt"
+        >
+          <RotateCcw size={18} />
+        </button>
+
+        <button
+          className={`relative h-16 w-16 rounded-full flex items-center justify-center text-white shadow-lg bg-gradient-to-br from-violet-600 to-violet-500 ${isRequesting ? "opacity-70" : "hover:brightness-110"}`}
+          onClick={handleMicClick}
+          title="Respond"
+        >
+          <Mic size={24} />
+        </button>
+
+        <button
+          className="h-12 w-12 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center shadow"
+          onClick={() => {}}
+          title="Speaker"
+        >
+          <Volume2 size={18} />
+        </button>
+      </div>
+      <div className="text-xs text-slate-500">Click the microphone to start your response</div>
     </div>
   );
 }
@@ -74,10 +79,9 @@ export default function SessionControls({
   isSessionActive,
 }) {
   return (
-    <div className="flex gap-4 border-t-2 border-gray-200 h-full rounded-md">
+    <div className="h-full w-full">
       {isSessionActive ? (
         <SessionActive
-          stopSession={stopSession}
           sendClientEvent={sendClientEvent}
           sendTextMessage={sendTextMessage}
           serverEvents={serverEvents}
